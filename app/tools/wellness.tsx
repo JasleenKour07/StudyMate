@@ -1,6 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCallback, useEffect, useState } from 'react';
-import { Dimensions, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SceneMap, TabView } from 'react-native-tab-view';
 
@@ -15,12 +23,15 @@ const moodColors: Record<MoodType, string> = {
   '🥳': 'bg-purple-100',
 };
 
-type MoodTabProps = {
-  mood: MoodType;
-  setMood: (mood: MoodType) => void;
-  affirmation: string;
+const shadowFix = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+  elevation: 3,
 };
-const MoodTab = ({ mood, setMood, affirmation }: MoodTabProps) => {
+
+const MoodTab = ({ mood, setMood, affirmation }: { mood: MoodType; setMood: (m: MoodType) => void; affirmation: string }) => {
   const moodTips: Record<MoodType, string> = {
     '😊': "Keep the joy alive! Maybe share a smile with someone today 😊",
     '😐': "Take a short break and listen to your favorite song 🎵",
@@ -40,15 +51,17 @@ const MoodTab = ({ mood, setMood, affirmation }: MoodTabProps) => {
   return (
     <ScrollView className="flex-1 bg-blue-50 p-4">
       <Text className="text-lg font-semibold text-blue-900 mb-3">How are you feeling today?</Text>
-      <View className="flex-row flex-wrap gap-2 justify-around">
+      <View className="flex-row flex-wrap justify-around">
         {moods.map((m) => (
-          <TouchableOpacity
-            key={m}
-            className={`w-16 h-16 rounded-xl items-center justify-center ${mood === m ? 'bg-blue-300' : 'bg-white'} shadow`}
-            onPress={() => setMood(m)}
-          >
-            <Text className="text-3xl">{m}</Text>
-          </TouchableOpacity>
+          <View key={m} style={{ margin: 6 }}>
+            <TouchableOpacity
+              className={`w-16 h-16 rounded-xl items-center justify-center ${mood === m ? 'bg-blue-300' : 'bg-white'}`}
+              style={shadowFix}
+              onPress={() => setMood(m)}
+            >
+              <Text className="text-3xl">{m}</Text>
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
       {mood && <Text className="text-blue-700 italic mt-4">{moodTips[mood]}</Text>}
@@ -59,16 +72,6 @@ const MoodTab = ({ mood, setMood, affirmation }: MoodTabProps) => {
   );
 };
 
-type JournalTabProps = {
-  journalEntry: string;
-  setJournalEntry: (entry: string) => void;
-  journalTemplates: { id: string; title: string; description: string }[];
-  saveJournal: () => void;
-  savedJournals: { text: string; heading: string; date: string; mood: string }[];
-  setJournalHeading: (heading: string) => void;
-  journalHeading: string;
-};
-
 const JournalTab = ({
   journalEntry,
   setJournalEntry,
@@ -77,15 +80,23 @@ const JournalTab = ({
   savedJournals,
   setJournalHeading,
   journalHeading,
-}: JournalTabProps) => {
+  mood,
+}: {
+  journalEntry: string;
+  setJournalEntry: (val: string) => void;
+  journalTemplates: { id: string; title: string; description: string }[];
+  saveJournal: () => void;
+  savedJournals: { text: string; heading: string; date: string; mood: string }[];
+  setJournalHeading: (val: string) => void;
+  journalHeading: string;
+  mood: MoodType;
+}) => {
   return (
     <View className="flex-1 bg-blue-50">
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-
         <Text className="text-lg font-semibold text-blue-900 mt-6 mb-2">New Entry</Text>
 
-        {/* Card-like Entry Form */}
-        <View className="bg-white rounded-xl shadow p-4 mb-4">
+        <View className="bg-white rounded-xl p-4 mb-4" style={shadowFix}>
           <TextInput
             placeholder="Heading..."
             value={journalHeading}
@@ -95,7 +106,7 @@ const JournalTab = ({
           <TextInput
             placeholder="Write your thoughts..."
             value={journalEntry}
-            onChangeText={(text: string) => setJournalEntry(text)}
+            onChangeText={setJournalEntry}
             multiline
             textAlignVertical="top"
             className="bg-gray-100 rounded-md px-3 py-2 h-28 text-base"
@@ -108,21 +119,23 @@ const JournalTab = ({
         {savedJournals.length > 0 && (
           <View className="mt-4">
             <Text className="text-lg font-semibold text-blue-900 mb-3">📚 All Journals</Text>
-            {savedJournals.map((entry, index) => (
-              <View
-                key={index}
-                className={`p-4 mb-3 rounded-xl shadow-sm ${
-                  moodColors[entry.mood as MoodType] || 'bg-white'
-                }`}
-              >
-                <View className="flex-row items-center justify-between mb-1">
-                  <Text className="text-sm text-gray-600">{entry.date}</Text>
-                  <Text className="text-lg">{entry.mood}</Text> {/* Mood */}
+            {savedJournals.map((entry, index) => {
+              const moodKey = entry.mood as MoodType;
+              return (
+                <View
+                  key={index}
+                  className={`p-4 mb-3 rounded-xl ${moodColors[moodKey] || 'bg-white'}`}
+                  style={shadowFix}
+                >
+                  <View className="flex-row items-center justify-between mb-1">
+                    <Text className="text-sm text-gray-600">{entry.date}</Text>
+                    <Text className="text-lg">{entry.mood}</Text>
+                  </View>
+                  <Text className="text-base font-bold text-blue-800 mt-1">{entry.heading}</Text>
+                  <Text className="text-base text-blue-800 mt-1">{entry.text}</Text>
                 </View>
-                <Text className="text-base font-bold text-blue-800 mt-1">{entry.heading}</Text>
-                <Text className="text-base text-blue-800 mt-1">{entry.text}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
       </ScrollView>
@@ -130,19 +143,16 @@ const JournalTab = ({
   );
 };
 
-
 export default function Wellness() {
   const layout = Dimensions.get('window');
   const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    { key: 'mood', title: 'Mood' },
-    { key: 'journal', title: 'Journal' },
-  ]);
   const [mood, setMood] = useState<MoodType>('😊');
   const [affirmation, setAffirmation] = useState('');
   const [journalEntry, setJournalEntry] = useState('');
   const [journalHeading, setJournalHeading] = useState('');
-  const [savedJournals, setSavedJournals] = useState<{ text: string; heading: string; date: string; mood: MoodType }[]>([]);
+  const [savedJournals, setSavedJournals] = useState<
+    { text: string; heading: string; date: string; mood: MoodType }[]
+  >([]);
 
   const journalTemplates = [
     { id: '1', title: 'Daily Reflection', description: 'How was your day?' },
@@ -152,11 +162,11 @@ export default function Wellness() {
 
   useEffect(() => {
     const affirmations = [
-      "You are doing your best!",
-      "Take a deep breath and keep going.",
-      "Progress, not perfection.",
-      "You’ve got this!",
-      "Every day is a fresh start.",
+      'You are doing your best!',
+      'Take a deep breath and keep going.',
+      'Progress, not perfection.',
+      'You’ve got this!',
+      'Every day is a fresh start.',
     ];
     setAffirmation(affirmations[Math.floor(Math.random() * affirmations.length)]);
 
@@ -180,75 +190,60 @@ export default function Wellness() {
     setJournalHeading('');
   };
 
-// Define wrapper components to satisfy SceneMap's requirement for React.ComponentType
-const MoodTabWrapper = () => (
-  <MoodTab mood={mood} setMood={setMood} affirmation={affirmation} />
-);
-const JournalTabWrapper = () => (
-  <JournalTab
-    journalEntry={journalEntry}
-    setJournalEntry={setJournalEntry}
-    journalTemplates={journalTemplates}
-    saveJournal={saveJournal}
-    savedJournals={savedJournals}
-    setJournalHeading={setJournalHeading}
-    journalHeading={journalHeading}
-  />
-);
-
-const renderScene = useCallback(
-  SceneMap({
-    mood: MoodTabWrapper,
-    journal: JournalTabWrapper,
-  }),
-  [
-    mood,
-    setMood,
-    affirmation,
-    journalEntry,
-    setJournalEntry,
-    journalTemplates,
-    saveJournal,
-    savedJournals,
-    setJournalHeading,
-    journalHeading,
-  ]
-);
-
- return (
-  <KeyboardAvoidingView
-    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    style={{ flex: 1 }}
-  >
-    <View className="flex-1">
-      <View className="flex-row justify-around bg-white border-b border-blue-200">
-        {routes.map((route, i) => (
-          <TouchableOpacity
-            key={route.key}
-            className={`flex-1 py-3 ${
-              index === i ? 'border-b-4 border-blue-600' : ''
-            }`}
-            onPress={() => setIndex(i)}
-          >
-            <Text
-              className={`text-center text-base font-bold ${
-                index === i ? 'text-blue-800' : 'text-blue-500'
-              }`}
-            >
-              {route.title}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <TabView
-        navigationState={{ index, routes }}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: layout.width }}
-        renderTabBar={() => null}
+  const renderScene = SceneMap({
+    mood: () => <MoodTab mood={mood} setMood={setMood} affirmation={affirmation} />,
+    journal: () => (
+      <JournalTab
+        journalEntry={journalEntry}
+        setJournalEntry={setJournalEntry}
+        journalTemplates={journalTemplates}
+        saveJournal={saveJournal}
+        savedJournals={savedJournals}
+        setJournalHeading={setJournalHeading}
+        journalHeading={journalHeading}
+        mood={mood}
       />
-    </View>
-  </KeyboardAvoidingView>
- );
+    ),
+  });
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={{ flex: 1 }}
+    >
+      <View className="flex-1">
+        <View className="flex-row justify-around bg-white border-b border-blue-200">
+          {['Mood', 'Journal'].map((title, i) => (
+            <TouchableOpacity
+              key={title}
+              className={`flex-1 py-3 ${index === i ? 'border-b-4 border-blue-600' : ''}`}
+              onPress={() => setIndex(i)}
+            >
+              <Text
+                className={`text-center text-base font-bold ${
+                  index === i ? 'text-blue-800' : 'text-blue-500'
+                }`}
+              >
+                {title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TabView
+          navigationState={{
+            index,
+            routes: [
+              { key: 'mood', title: 'Mood' },
+              { key: 'journal', title: 'Journal' },
+            ],
+          }}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{ width: layout.width }}
+          renderTabBar={() => null}
+        />
+      </View>
+    </KeyboardAvoidingView>
+  );
 }
