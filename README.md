@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
@@ -62,3 +63,6 @@ npm install @react-native-async-storage/async-storage
 
 npm install @react-native-firebase/app 
 
+=======
+# StudyMate
+>>>>>>> 2c2c88309fbb20178bdcb744488fab6d94aae908
