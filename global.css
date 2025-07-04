@@ -1,0 +1,5 @@
+/* app/global.css */
+/* This file must be processed with Tailwind CSS CLI or a build tool */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
