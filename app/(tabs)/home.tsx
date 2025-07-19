@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View
 } from 'react-native';
-import { SafeAreaView } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import ToolCard from '../components/ToolCard';
 
@@ -35,8 +35,8 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className={`flex-1 ${bgColor}`}>
       <ScrollView className="flex-1 px-4 pt-6 pb-10" contentContainerStyle={{ paddingBottom: 40 }}>
-        <View className="max-w-4xl w-full mx-auto">
-          <Text className={`text-xl font-bold ${textColor}`}>Hi, Jasleen 👋</Text>
+        <View className="max-w-4xl w-full mx-auto ">
+          <Text className={`text-xl font-bold mb-2 pt-7 ${textColor}`}>Hi, Jasleen 👋</Text>
           <Text className={`italic text-sm mb-3 ${subText}`}>
             "Start where you are. Use what you have. Do what you can."
           </Text>
